@@ -1,0 +1,108 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:aop="http://www.springframework.org/schema/aop" xmlns:tx="http://www.springframework.org/schema/tx"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans-3.2.xsd
+        http://www.springframework.org/schema/mvc
+        http://www.springframework.org/schema/mvc/spring-mvc-3.2.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context-3.2.xsd
+        http://www.springframework.org/schema/aop
+        http://www.springframework.org/schema/aop/spring-aop-3.2.xsd
+        http://www.springframework.org/schema/tx
+        http://www.springframework.org/schema/tx/spring-tx-3.2.xsd ">
+
+    <mvc:annotation-driven />
+    <!-- 支持注解Aspectj -->
+    <aop:aspectj-autoproxy />
+    <!-- 支持注解配置bean -->
+    <context:annotation-config />
+    <!--使用annotation 自动注册bean,并检查@Required,@Autowired的属性已被注入base-package为需要扫描的包（含所有子包） -->
+    <context:component-scan base-package="com.william.controller"/>
+    <context:component-scan base-package="com.william.service"/>
+    <!-- 加载jdbc.properties文件中的内容，jdbc.properties文件中key命名要有一定的特殊规则 -->
+    <context:property-placeholder location="classpath:jdbc.properties"/>
+    <!-- 配置数据源,dbcp oracle-->
+    <!--<bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource"-->
+          <!--destroy-method="close">-->
+        <!--<property name="driverClassName" value="${driverClass}" />-->
+        <!--<property name="url" value="${url}" />-->
+        <!--<property name="username" value="${username}" />-->
+        <!--<property name="password" value="${password}" />-->
+        <!--<property name="initialSize" value="${jdbc.initialSize}" />-->
+        <!--<property name="maxActive" value="${jdbc.maxActive}" />-->
+        <!--<property name="maxIdle" value="${jdbc.maxIdle}" />-->
+        <!--<property name="minIdle" value="${jdbc.minIdle}" />-->
+        <!--&lt;!&ndash; 连接被泄露时是否打印 &ndash;&gt;-->
+        <!--<property name="logAbandoned" value="true"/>-->
+        <!--&lt;!&ndash;removeAbandoned: 是否自动回收超时连接&ndash;&gt;-->
+        <!--<property name="removeAbandoned"  value="true"/>-->
+        <!--&lt;!&ndash;removeAbandonedTimeout: 超时时间(以秒数为单位)&ndash;&gt;-->
+        <!--<property name="removeAbandonedTimeout" value="180"/>-->
+        <!--&lt;!&ndash;maxWait: 超时等待时间以毫秒为单位 1000等于60秒&ndash;&gt;-->
+        <!--<property name="maxWait" value="60000"/>-->
+        <!--&lt;!&ndash; 在空闲连接回收器线程运行期间休眠的时间值,以毫秒为单位. &ndash;&gt;-->
+        <!--<property name="timeBetweenEvictionRunsMillis" value="10000"/>-->
+        <!--&lt;!&ndash;  在每次空闲连接回收器线程(如果有)运行时检查的连接数量 &ndash;&gt;-->
+        <!--<property name="numTestsPerEvictionRun" value="10"/>-->
+        <!--&lt;!&ndash; 1000 * 60 * 30  连接在池中保持空闲而不被空闲连接回收器线程&ndash;&gt;-->
+        <!--<property name="minEvictableIdleTimeMillis" value="10000"/>-->
+        <!--<property name="validationQuery" value="SELECT SYSDATE FROM DUAL"/>-->
+    <!--</bean>-->
+    <!-- 阿里 druid数据库连接池 -->
+    <bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource" destroy-method="close">
+        <!-- 数据库基本信息配置 -->
+        <property name="url" value="${url}" />
+        <property name="username" value="${username}" />
+        <property name="password" value="${password}" />
+        <property name="driverClassName" value="${driverClassName}" />
+        <property name="filters" value="${filters}" />
+        <!-- 最大并发连接数 -->
+        <property name="maxActive" value="${maxActive}" />
+        <!-- 初始化连接数量 -->
+        <property name="initialSize" value="${initialSize}" />
+        <!-- 配置获取连接等待超时的时间 -->
+        <property name="maxWait" value="${maxWait}" />
+        <!-- 最小空闲连接数 -->
+        <property name="minIdle" value="${minIdle}" />
+        <!-- 配置间隔多久才进行一次检测，检测需要关闭的空闲连接，单位是毫秒 -->
+        <property name="timeBetweenEvictionRunsMillis" value="${timeBetweenEvictionRunsMillis}" />
+        <!-- 配置一个连接在池中最小生存的时间，单位是毫秒 -->
+        <property name="minEvictableIdleTimeMillis" value="${minEvictableIdleTimeMillis}" />
+        <property name="validationQuery" value="${validationQuery}" />
+        <property name="testWhileIdle" value="${testWhileIdle}" />
+        <property name="testOnBorrow" value="${testOnBorrow}" />
+        <property name="testOnReturn" value="${testOnReturn}" />
+        <property name="maxOpenPreparedStatements" value="${maxOpenPreparedStatements}" />
+        <!-- 打开removeAbandoned功能 -->
+        <property name="removeAbandoned" value="${removeAbandoned}" />
+        <!-- 1800秒，也就是30分钟 -->
+        <property name="removeAbandonedTimeout" value="${removeAbandonedTimeout}" />
+        <!-- 关闭abanded连接时输出错误日志 -->
+        <property name="logAbandoned" value="${logAbandoned}" />
+        <property name="connectionProperties" value="config.file=classpath:onelikeyouConfig.properties;druid.stat.slowSqlMillis=5000" />
+    </bean>
+
+    <!-- sqlSessionFactory -->
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <!-- 数据库连接池 -->
+        <property name="dataSource" ref="dataSource" />
+        <!-- 加载mybatis的全局配置文件 -->
+        <!-- <property name="configLocation" value="classpath:sqlMapConfig.xml" /> -->
+        <property name="mapperLocations">
+            <list>
+                <!-- 自动匹配Mapper映射文件 -->
+                <value>classpath*:mybatis/*Mapper.xml</value>
+            </list>
+        </property>
+    </bean>
+
+    <!-- mapper扫描器 -->
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <!-- 扫描包路径，如果需要扫描多个包，中间使用半角逗号隔开 -->
+        <property name="basePackage" value="com.william.mapper"></property>
+        <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"></property>
+    </bean>
+
+</beans>
